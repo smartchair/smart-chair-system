@@ -2,16 +2,16 @@
 import dht
 from machine import Pin
 from time import sleep
-#import requests
-#import json
+import urequests
+import ujson
 from hcLib import HCSR04
 from ldrLib import LDR
 
 # defining constants and initial values
 API_ENDPOINT = "https://backend-smart-chair.herokuapp.com/log/info"
-chair_id = "1"
+chair_id = "ESP-03"
 sensor = dht.DHT11(Pin(5))
-presence_sensor = HCSR04(trigger_pin=13, echo_pin=12, echo_timeout_us=1000000)
+presence_sensor = HCSR04(trigger_pin=27, echo_pin=26, echo_timeout_us=1000000)
 ldr_sensor = LDR(34)
 session_id = 0
 count_time = 0
@@ -20,7 +20,7 @@ hc04_presence = False
 # getting data from sensors
 while True:
     try:
-        sleep(2)
+        sleep(10)
 
     # getting temperature and humidity
         sensor.measure()
@@ -58,14 +58,14 @@ while True:
 
     # creating post request
         payload = { "id": session_id, "temp": dht_temp, "chairId": chair_id, "presence": hc04_presence, "noise": 0, "lum": ldr_lum, "hum": dht_hum}
-    
-        print (payload)
+        api_data = ujson.dumps(payload)
+        
     # sending post request and saving response as response object
-    # r = requests.post(url = API_ENDPOINT, data = json.dumps(payload))
+        r = urequests.post(API_ENDPOINT, data = api_data)
 
     # extracting response text
-    # pastebin_url = r.text
-    # print("The pastebin URL is:%s"%pastebin_url)
+        pastebin_url = r.text
+        print("The pastebin URL is:%s"%pastebin_url)
 
     # handling error
     except OSError as e:
